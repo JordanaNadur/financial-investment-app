@@ -28,7 +28,6 @@
               "src/assets"
             ],
             "styles": [
-              "@angular/material/theming",
               "src/styles.scss"
             ],
             "scripts": []
@@ -89,7 +88,6 @@
               "src/assets"
             ],
             "styles": [
-              "@angular/material/theming",
               "src/styles.scss"
             ],
             "scripts": []
@@ -97,5 +95,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "8cd531ae-184e-47e5-8939-e72c5beb13f5"
   }
 }

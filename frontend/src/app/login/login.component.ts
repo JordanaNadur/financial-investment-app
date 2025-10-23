@@ -1,29 +1,31 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule
+  ],
   template: `
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Login</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-          <mat-form-field appearance="fill">
-            <mat-label>Username</mat-label>
-            <input matInput formControlName="username">
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-label>Password</mat-label>
-            <input matInput type="password" formControlName="password">
-          </mat-form-field>
-          <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">Login</button>
-        </form>
-      </mat-card-content>
-    </mat-card>
+    <div class="login-container">
+      <h1>Financial Investment App</h1>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div>
+          <label for="username">Username:</label>
+          <input id="username" type="text" formControlName="username" placeholder="Digite seu usuário">
+        </div>
+        <div>
+          <label for="password">Password:</label>
+          <input id="password" type="password" formControlName="password" placeholder="Digite sua senha">
+        </div>
+        <button type="submit" [disabled]="loginForm.invalid">Entrar</button>
+      </form>
+    </div>
   `,
   styleUrls: ['./login.component.scss']
 })
@@ -39,10 +41,9 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      this.http.post('http://localhost:8081/api/auth/login', this.loginForm.value).subscribe(response => {
-        localStorage.setItem('token', response['token']);
-        this.router.navigate(['/investments']);
-      });
+      console.log('Form submitted:', this.loginForm.value);
+      // Temporarily navigate without API call
+      this.router.navigate(['/investments']);
     }
   }
 }
