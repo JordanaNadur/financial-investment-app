@@ -1,0 +1,24 @@
+# Configuração do servidor
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+
+rabbitmq:
+  exchange:
+    investment: "investment.exchange"
+  queue:
+    investment-created: "investment.created.queue"
+    investment-withdrawn: "investment.withdrawn.queue"
+  routing-key:
+    investment-created: "investment.created"
+    investment-withdrawn: "investment.withdrawn"
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest

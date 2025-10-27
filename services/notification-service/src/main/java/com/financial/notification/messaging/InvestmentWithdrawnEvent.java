@@ -10,13 +10,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvestmentCreatedEvent {
+public class InvestmentWithdrawnEvent {
     private Long userId;
     private Long investmentId;
-    private BigDecimal amount;
-    private Integer termInMonths;
-    private BigDecimal monthlyReturn;
-    private String modality;
-    private LocalDateTime createdAt;
+    private BigDecimal withdrawnAmount;
+    private LocalDateTime withdrawnAt;
     private String message;
 }

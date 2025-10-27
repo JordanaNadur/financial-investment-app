@@ -1,0 +1,66 @@
+# Configuração do servidor
+spring:
+  application:
+    name: notification-service
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5433/notification_db
+    username: user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    connection-timeout: 5000
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        multiplier: 2.0
+    listener:
+      simple:
+        acknowledge-mode: auto
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          initial-interval: 3000
+          max-attempts: 3
+          multiplier: 2.0
+
+# Configurações customizadas do RabbitMQ
+rabbitmq:
+  exchange:
+    investment: "investment.exchange"
+  queue:
+    investment-created: "investment.created.queue"
+    investment-withdrawn: "investment.withdrawn.queue"
+    investment-notification-dlq: "investment.notification.dlq"
+  routing-key:
+    investment-created: "investment.created"
+    investment-withdrawn: "investment.withdrawn"
+    investment-notification-dlq: "investment.notification.dlq"
+
+# Configuração do servidor
+server:
+  port: 8083
+  servlet:
+    context-path: /api
+
+# Configurações de Logging
+logging:
+  level:
+    com.financial.notification: DEBUG
+    org.springframework.amqp: INFO
+    org.hibernate.SQL: DEBUG
