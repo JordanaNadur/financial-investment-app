@@ -31,7 +31,9 @@ public class AuthService {
     @Value("${jwt.refresh.expiration}")
     private long jwtRefreshExpiration;
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private Key getKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     public AuthService(AuthenticateUserUseCase authenticateUserUseCase, RegisterUserUseCase registerUserUseCase) {
         this.authenticateUserUseCase = authenticateUserUseCase;
@@ -62,7 +64,7 @@ public class AuthService {
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(key)
+                .signWith(getKey())
                 .compact();
     }
 
@@ -71,7 +73,7 @@ public class AuthService {
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpiration))
-                .signWith(key)
+                .signWith(getKey())
                 .compact();
     }
 }

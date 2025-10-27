@@ -2,22 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-investment-options',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="header">
-      <h1>Opções de Investimento</h1>
-      <button class="back-btn" (click)="goBack()">
-        ← Voltar ao Portfólio
-      </button>
-    </div>
-
     <div class="investment-options-container">
       <div class="options-grid">
         <div class="option-card" (click)="selectInvestment('CDB')">
@@ -183,25 +174,13 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
         <form [formGroup]="investmentForm" (ngSubmit)="confirmInvestment()">
           <div class="form-group">
             <label for="amount">Valor do investimento:</label>
-            <input 
-              id="amount" 
-              type="number" 
-              formControlName="amount" 
-              [placeholder]="'Valor mínimo: ' + selectedProduct.minValue"
-              [min]="getMinInvestmentValue()"
-            >
-            <div class="error" *ngIf="investmentForm.get('amount')?.invalid && investmentForm.get('amount')?.touched">
-              {{ getAmountErrorMessage() }}
-            </div>
+            <input id="amount" type="number" formControlName="amount" [placeholder]="'Valor mínimo: ' + selectedProduct.minValue" [min]="getMinInvestmentValue()">
+            <div class="error" *ngIf="investmentForm.get('amount')?.invalid && investmentForm.get('amount')?.touched">{{ getAmountErrorMessage() }}</div>
           </div>
 
           <div class="form-buttons">
-            <button type="button" class="cancel-btn" (click)="cancelInvestment()">
-              Cancelar
-            </button>
-            <button type="submit" class="confirm-btn" [disabled]="investmentForm.invalid">
-              Confirmar Investimento
-            </button>
+            <button type="button" class="cancel-btn" (click)="cancelInvestment()">Cancelar</button>
+            <button type="submit" class="confirm-btn" [disabled]="investmentForm.invalid">Confirmar Investimento</button>
           </div>
         </form>
       </div>
@@ -214,143 +193,41 @@ export class InvestmentOptionsComponent {
   selectedProduct: any = null;
   showInvestmentForm = false;
   investmentForm: FormGroup;
-  currentCDI = 13.75; // CDI atual (exemplo realista)
+  currentCDI = 13.75;
+  username: string | null = null;
 
   cdbProducts = [
-    {
-      issuer: 'Banco Inter',
-      percentage: 125,
-      maturity: '24 meses',
-      risk: 'Baixo',
-      fgc: 'Até R$ 250.000',
-      taxRate: 'Tabela regressiva IR',
-      minValue: 'R$ 100,00'
-    },
-    {
-      issuer: 'BTG Pactual',
-      percentage: 130,
-      maturity: '36 meses',
-      risk: 'Baixo',
-      fgc: 'Até R$ 250.000',
-      taxRate: 'Tabela regressiva IR',
-      minValue: 'R$ 1.000,00'
-    },
-    {
-      issuer: 'Banco Safra',
-      percentage: 128,
-      maturity: '18 meses',
-      risk: 'Baixo',
-      fgc: 'Até R$ 250.000',
-      taxRate: 'Tabela regressiva IR',
-      minValue: 'R$ 500,00'
-    }
+    { issuer: 'Banco Inter', percentage: 125, maturity: '24 meses', risk: 'Baixo', fgc: 'Até R$ 250.000', taxRate: 'Tabela regressiva IR', minValue: 'R$ 100,00' },
+    { issuer: 'BTG Pactual', percentage: 130, maturity: '36 meses', risk: 'Baixo', fgc: 'Até R$ 250.000', taxRate: 'Tabela regressiva IR', minValue: 'R$ 1.000,00' },
+    { issuer: 'Banco Safra', percentage: 128, maturity: '18 meses', risk: 'Baixo', fgc: 'Até R$ 250.000', taxRate: 'Tabela regressiva IR', minValue: 'R$ 500,00' }
   ];
 
   tesouroProducts = [
-    {
-      name: 'Tesouro SELIC 2029',
-      rate: 13.85,
-      maturity: '01/03/2029',
-      risk: 'Muito Baixo',
-      taxRate: 'Tabela regressiva',
-      issuer: 'Tesouro Nacional',
-      minValue: 'R$ 30,00'
-    },
-    {
-      name: 'Tesouro Prefixado 2027',
-      rate: 12.50,
-      maturity: '01/01/2027',
-      risk: 'Baixo',
-      taxRate: 'Tabela regressiva',
-      issuer: 'Tesouro Nacional',
-      minValue: 'R$ 30,00'
-    },
-    {
-      name: 'Tesouro IPCA+ 2035',
-      rate: 6.25,
-      maturity: '15/05/2035',
-      risk: 'Baixo',
-      taxRate: 'Tabela regressiva',
-      issuer: 'Tesouro Nacional',
-      minValue: 'R$ 30,00'
-    }
+    { name: 'Tesouro SELIC 2029', rate: 13.85, maturity: '01/03/2029', risk: 'Muito Baixo', taxRate: 'Tabela regressiva', issuer: 'Tesouro Nacional', minValue: 'R$ 30,00' },
+    { name: 'Tesouro Prefixado 2027', rate: 12.50, maturity: '01/01/2027', risk: 'Baixo', taxRate: 'Tabela regressiva', issuer: 'Tesouro Nacional', minValue: 'R$ 30,00' },
+    { name: 'Tesouro IPCA+ 2035', rate: 6.25, maturity: '15/05/2035', risk: 'Baixo', taxRate: 'Tabela regressiva', issuer: 'Tesouro Nacional', minValue: 'R$ 30,00' }
   ];
 
   stockProducts = [
-    {
-      code: 'PETR4',
-      company: 'Petrobras',
-      price: '38.24',
-      dividendYield: '12.5',
-      risk: 'Alto',
-      sector: 'Petróleo e Gás',
-      taxRate: '15% sobre ganho capital',
-      market: 'B3 - Bovespa',
-      minValue: '1 ação (R$ 38,24)'
-    },
-    {
-      code: 'VALE3',
-      company: 'Vale S.A.',
-      price: '65.12',
-      dividendYield: '8.7',
-      risk: 'Alto',
-      sector: 'Mineração',
-      taxRate: '15% sobre ganho capital',
-      market: 'B3 - Bovespa',
-      minValue: '1 ação (R$ 65,12)'
-    },
-    {
-      code: 'ITUB4',
-      company: 'Itaú Unibanco',
-      price: '32.85',
-      dividendYield: '9.2',
-      risk: 'Médio-Alto',
-      sector: 'Financeiro',
-      taxRate: '15% sobre ganho capital',
-      market: 'B3 - Bovespa',
-      minValue: '1 ação (R$ 32,85)'
-    }
+    { code: 'PETR4', company: 'Petrobras', price: '38.24', dividendYield: '12.5', risk: 'Alto', sector: 'Petróleo e Gás', taxRate: '15% sobre ganho capital', market: 'B3 - Bovespa', minValue: '1 ação (R$ 38,24)' },
+    { code: 'VALE3', company: 'Vale S.A.', price: '65.12', dividendYield: '8.7', risk: 'Alto', sector: 'Mineração', taxRate: '15% sobre ganho capital', market: 'B3 - Bovespa', minValue: '1 ação (R$ 65,12)' },
+    { code: 'ITUB4', company: 'Itaú Unibanco', price: '32.85', dividendYield: '9.2', risk: 'Médio-Alto', sector: 'Financeiro', taxRate: '15% sobre ganho capital', market: 'B3 - Bovespa', minValue: '1 ação (R$ 32,85)' }
   ];
 
   lciLcaProducts = [
-    {
-      issuer: 'Banco ABC Brasil',
-      percentage: 95,
-      maturity: '24 meses',
-      risk: 'Baixo',
-      fgc: 'Até R$ 250.000',
-      minValue: 'R$ 1.000,00',
-      type: 'LCI'
-    },
-    {
-      issuer: 'Banco Daycoval',
-      percentage: 98,
-      maturity: '36 meses',
-      risk: 'Baixo',
-      fgc: 'Até R$ 250.000',
-      minValue: 'R$ 5.000,00',
-      type: 'LCA'
-    },
-    {
-      issuer: 'Banco Pine',
-      percentage: 102,
-      maturity: '30 meses',
-      risk: 'Médio-Baixo',
-      fgc: 'Até R$ 250.000',
-      minValue: 'R$ 2.500,00',
-      type: 'LCI'
-    }
+    { issuer: 'Banco ABC Brasil', percentage: 95, maturity: '24 meses', risk: 'Baixo', fgc: 'Até R$ 250.000', minValue: 'R$ 1.000,00', type: 'LCI' },
+    { issuer: 'Banco Daycoval', percentage: 98, maturity: '36 meses', risk: 'Baixo', fgc: 'Até R$ 250.000', minValue: 'R$ 5.000,00', type: 'LCA' },
+    { issuer: 'Banco Pine', percentage: 102, maturity: '30 meses', risk: 'Médio-Baixo', fgc: 'Até R$ 250.000', minValue: 'R$ 2.500,00', type: 'LCI' }
   ];
 
-  constructor(private router: Router, private fb: FormBuilder) {
-    this.investmentForm = this.fb.group({
-      amount: ['', [Validators.required, Validators.min(100)]]
-    });
+  constructor(private router: Router, private fb: FormBuilder, private auth: AuthService) {
+    this.username = localStorage.getItem('username');
+    this.investmentForm = this.fb.group({ amount: ['', [Validators.required, Validators.min(100)]] });
   }
 
-  goBack() {
-    this.router.navigate(['/investments']);
-  }
+  logout() { this.auth.logout(); }
+
+  goBack() { this.router.navigate(['/investments']); }
 
   selectInvestment(type: string) {
     this.selectedInvestment = type;
@@ -361,8 +238,6 @@ export class InvestmentOptionsComponent {
   selectProduct(product: any) {
     this.selectedProduct = product;
     this.showInvestmentForm = true;
-    
-    // Define valor mínimo baseado no produto
     const minValue = this.getMinInvestmentValue();
     this.investmentForm.get('amount')?.setValidators([Validators.required, Validators.min(minValue)]);
     this.investmentForm.get('amount')?.updateValueAndValidity();
@@ -392,12 +267,8 @@ export class InvestmentOptionsComponent {
 
   getMinInvestmentValue(): number {
     if (!this.selectedProduct) return 100;
-    
-    if (this.selectedInvestment === 'Ações') {
-      return parseFloat(this.selectedProduct.price);
-    } else {
-      return parseFloat(this.selectedProduct.minValue.replace(/[^\d,]/g, '').replace(',', '.')) || 100;
-    }
+    if (this.selectedInvestment === 'Ações') return parseFloat(this.selectedProduct.price);
+    return parseFloat(this.selectedProduct.minValue.replace(/[^\d,]/g, '').replace(',', '.')) || 100;
   }
 
   getAmountErrorMessage(): string {
@@ -407,53 +278,43 @@ export class InvestmentOptionsComponent {
 
   getProductReturnDisplay(): string {
     if (!this.selectedProduct) return '';
-    
     if (this.selectedInvestment === 'CDB' || this.selectedInvestment === 'LCI/LCA') {
       const finalRate = (this.currentCDI * this.selectedProduct.percentage / 100).toFixed(2);
       return `${this.selectedProduct.percentage}% do CDI (≈ ${finalRate}% a.a.)`;
-    } else if (this.selectedInvestment === 'Tesouro Direto') {
-      return `${this.selectedProduct.rate}% a.a.`;
-    } else if (this.selectedInvestment === 'Ações') {
-      return `Variável (DY: ${this.selectedProduct.dividendYield}%)`;
     }
-    
+    if (this.selectedInvestment === 'Tesouro Direto') return `${this.selectedProduct.rate}% a.a.`;
+    if (this.selectedInvestment === 'Ações') return `Variável (DY: ${this.selectedProduct.dividendYield}%)`;
     return '';
   }
 
   confirmInvestment() {
-    if (this.investmentForm.valid && this.selectedProduct) {
-      const formData = this.investmentForm.value;
-      let investmentName = '';
-      
-      // Personaliza o nome baseado no produto selecionado
-      if (this.selectedInvestment === 'CDB') {
-        investmentName = `CDB ${this.selectedProduct.issuer} - ${this.selectedProduct.percentage}% CDI`;
-      } else if (this.selectedInvestment === 'Tesouro Direto') {
-        investmentName = this.selectedProduct.name;
-      } else if (this.selectedInvestment === 'Ações') {
-        investmentName = `${this.selectedProduct.code} - ${this.selectedProduct.company}`;
-      } else if (this.selectedInvestment === 'LCI/LCA') {
-        investmentName = `${this.selectedProduct.type} ${this.selectedProduct.issuer} - ${this.selectedProduct.percentage}% CDI`;
-      }
-
-      // Simula o processamento do investimento
-      const newInvestment = {
-        name: investmentName,
-        type: this.getInvestmentType(this.selectedInvestment!),
-        value: formData.amount,
-        return: this.getEstimatedReturn(this.selectedInvestment!),
-        date: new Date()
-      };
-
-      // Salva no localStorage para usar na página de investimentos
-      const existingInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
-      existingInvestments.push(newInvestment);
-      localStorage.setItem('investments', JSON.stringify(existingInvestments));
-
-      alert(`Investimento realizado com sucesso! 🎉\n\nProduto: ${investmentName}\nValor: ${formData.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\nVencimento: ${this.selectedProduct.maturity}\n\nRetornando ao seu portfólio...`);
-      
-      this.router.navigate(['/investments']);
+    if (!(this.investmentForm.valid && this.selectedProduct)) return;
+    const formData = this.investmentForm.value;
+    let investmentName = '';
+    if (this.selectedInvestment === 'CDB') {
+      investmentName = `CDB ${this.selectedProduct.issuer} - ${this.selectedProduct.percentage}% CDI`;
+    } else if (this.selectedInvestment === 'Tesouro Direto') {
+      investmentName = this.selectedProduct.name;
+    } else if (this.selectedInvestment === 'Ações') {
+      investmentName = `${this.selectedProduct.code} - ${this.selectedProduct.company}`;
+    } else if (this.selectedInvestment === 'LCI/LCA') {
+      investmentName = `${this.selectedProduct.type} ${this.selectedProduct.issuer} - ${this.selectedProduct.percentage}% CDI`;
     }
+
+    const newInvestment = {
+      name: investmentName,
+      type: this.getInvestmentType(this.selectedInvestment!),
+      value: formData.amount,
+      return: this.getEstimatedReturn(this.selectedInvestment!),
+      date: new Date()
+    };
+
+    const existingInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
+    existingInvestments.push(newInvestment);
+    localStorage.setItem('investments', JSON.stringify(existingInvestments));
+
+    alert(`Investimento realizado com sucesso! 🎉\n\nProduto: ${investmentName}\nValor: ${formData.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\nVencimento: ${this.selectedProduct.maturity}\n\nRetornando ao seu portfólio...`);
+    this.router.navigate(['/investments']);
   }
 
   private getInvestmentType(investment: string): string {
