@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,7 +21,12 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final Key key = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    private Key getKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -29,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
-                Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+                Claims claims = Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(token).getBody();
                 String username = claims.getSubject();
                 String role = claims.get("role", String.class);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(

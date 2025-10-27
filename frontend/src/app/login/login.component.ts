@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +23,10 @@ import { CommonModule } from '@angular/common';
           <label for="password">Password:</label>
           <input id="password" type="password" formControlName="password" placeholder="Digite sua senha">
         </div>
-        <button type="submit" [disabled]="loginForm.invalid">Entrar</button>
+        <div class="buttons">
+          <button type="submit" [disabled]="loginForm.invalid || loading">Entrar</button>
+          <button type="button" (click)="goToRegister()">Cadastro</button>
+        </div>
       </form>
     </div>
   `,
@@ -31,8 +34,9 @@ import { CommonModule } from '@angular/common';
 })
 export class LoginComponent {
   loginForm: FormGroup;
+  loading = false;
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private router: Router) {
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
@@ -41,9 +45,22 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      console.log('Form submitted:', this.loginForm.value);
-      // Temporarily navigate without API call
-      this.router.navigate(['/investments']);
+      this.loading = true;
+      const { username, password } = this.loginForm.value;
+      this.auth.login({ username, password }).subscribe({
+        next: () => {
+          this.loading = false;
+          this.router.navigate(['/investments']);
+        },
+        error: (err) => {
+          this.loading = false;
+          alert('Falha no login: ' + (err?.error?.message || err.statusText || 'Erro desconhecido'));
+        }
+      });
     }
+  }
+
+  goToRegister() {
+    this.router.navigate(['/registro']);
   }
 }

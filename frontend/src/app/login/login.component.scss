@@ -29,6 +29,16 @@ div {
   margin-bottom: 25px;
 }
 
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.buttons button {
+  width: 100%;
+}
+
 label {
   display: block;
   margin-bottom: 8px;

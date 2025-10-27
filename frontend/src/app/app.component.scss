@@ -2,3 +2,32 @@
   display: block;
   height: 100vh;
 }
+
+.global-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #0d47a1;
+  color: #fff;
+}
+
+.brand {
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.actions button {
+  background: #fff;
+  color: #0d47a1;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
