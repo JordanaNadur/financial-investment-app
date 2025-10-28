@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "portfolio")
 @Data
 public class Portfolio {
 
