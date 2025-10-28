@@ -1,6 +1,5 @@
 package com.financial.notification.messaging;
 
-import com.financial.notification.domain.model.Notification;
 import com.financial.notification.domain.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

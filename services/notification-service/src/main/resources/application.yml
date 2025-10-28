@@ -52,12 +52,6 @@ rabbitmq:
     investment-withdrawn: "investment.withdrawn"
     investment-notification-dlq: "investment.notification.dlq"
 
-# Configuração do servidor
-server:
-  port: 8083
-  servlet:
-    context-path: /api
-
 # Configurações de Logging
 logging:
   level:
