@@ -18,10 +18,7 @@ public class Investment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private Double amount;
-
-    // Novos campos para substituir a funcionalidade do Notification
+    @Column(name = "user_id", nullable = false)
     private Long userId;
     private Long investmentId;
 
@@ -36,7 +33,23 @@ public class Investment {
 
     private LocalDateTime createdAt;
     private LocalDateTime sentAt;
-    private String metadata;
+
+    @Embedded
+    private InvestmentDetails investmentDetails;
+
+    @Embeddable
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class InvestmentDetails {
+        private String investmentName;
+        private Double amount;
+        private String modality;
+        private Double withdrawnAmount;
+        private Integer termInMonths;
+    }
 
     public enum InvestmentType {
         INVESTMENT_CREATED,

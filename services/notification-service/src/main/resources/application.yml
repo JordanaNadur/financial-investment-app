@@ -5,9 +5,9 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:postgresql://localhost:5433/notification_db
+    url: jdbc:postgresql://postgres:5432/investment_db
     username: user
-    password: password
+    password: pass
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -18,15 +18,15 @@ spring:
         format_sql: true
     show-sql: true
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: 5672
     username: guest
     password: guest
-    connection-timeout: 5000
+    connection-timeout: 10000
     template:
       retry:
         enabled: true
-        initial-interval: 1000
+        initial-interval: 5s
         max-attempts: 3
         multiplier: 2.0
     listener:
@@ -35,9 +35,11 @@ spring:
         default-requeue-rejected: false
         retry:
           enabled: true
-          initial-interval: 3000
+          initial-interval: 5s
           max-attempts: 3
           multiplier: 2.0
+        auto-startup: true
+        missing-queues-fatal: false
 
 # Configurações customizadas do RabbitMQ
 rabbitmq:

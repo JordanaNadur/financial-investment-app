@@ -21,35 +21,16 @@ public class NotificationService {
     @Transactional
     public void processInvestmentCreatedNotification(InvestmentCreatedEvent event) {
         try {
-            // Buscar o investment existente ou criar um novo para notificação
-            Investment investment = investmentRepository.findById(event.getInvestmentId())
-                    .orElseGet(() -> {
-                        // Se não existir, criar um novo investment para a notificação
-                        return Investment.builder()
-                                .id(event.getInvestmentId())
-                                .name(event.getModality() != null ? event.getModality() : "Unknown Investment")
-                                .amount(event.getAmount())
-                                .build();
-                    });
+            log.info("Processing investment created notification for investment ID: {}", event.getInvestmentId());
 
-            // Atualizar os campos de notificação
-            investment.setUserId(event.getUserId());
-            investment.setInvestmentId(event.getInvestmentId());
-            investment.setType(Investment.InvestmentType.INVESTMENT_CREATED);
-            investment.setTitle("Novo Investimento Criado");
-            investment.setMessage(buildInvestmentCreatedMessage(event, investment));
-            investment.setStatus(Investment.InvestmentStatus.PENDING);
-            investment.setCreatedAt(LocalDateTime.now());
-            investment.setMetadata(buildInvestmentMetadata(event));
+            Investment investment = createInvestmentCreatedNotification(event);
+            Investment savedNotification = investmentRepository.save(investment);
 
-            Investment savedInvestment = investmentRepository.save(investment);
-            log.info("Investment notification saved with ID: {} for investment ID: {}",
-                    savedInvestment.getId(), event.getInvestmentId());
+            // Simular envio e atualizar status
+            sendNotification(savedNotification);
 
-            // Atualizar status para enviado
-            savedInvestment.setStatus(Investment.InvestmentStatus.SENT);
-            savedInvestment.setSentAt(LocalDateTime.now());
-            investmentRepository.save(savedInvestment);
+            log.info("Successfully processed investment created notification for investment ID: {}",
+                    event.getInvestmentId());
 
         } catch (Exception e) {
             log.error("Failed to process investment created notification for investment ID {}: {}",
@@ -61,33 +42,16 @@ public class NotificationService {
     @Transactional
     public void processInvestmentWithdrawnNotification(InvestmentWithdrawnEvent event) {
         try {
-            // Buscar o investment existente
-            Investment investment = investmentRepository.findById(event.getInvestmentId())
-                    .orElseGet(() -> {
-                        return Investment.builder()
-                                .id(event.getInvestmentId())
-                                .name("Investment Withdrawal")
-                                .amount(event.getWithdrawnAmount())
-                                .build();
-                    });
+            log.info("Processing investment withdrawn notification for investment ID: {}", event.getInvestmentId());
 
-            // Atualizar para notificação de resgate
-            investment.setUserId(event.getUserId());
-            investment.setInvestmentId(event.getInvestmentId());
-            investment.setType(Investment.InvestmentType.INVESTMENT_WITHDRAWN);
-            investment.setTitle("Resgate de Investimento");
-            investment.setMessage(buildInvestmentWithdrawnMessage(event, investment));
-            investment.setStatus(Investment.InvestmentStatus.PENDING);
-            investment.setCreatedAt(LocalDateTime.now());
-            investment.setMetadata(buildWithdrawnMetadata(event));
+            Investment investment = createInvestmentWithdrawnNotification(event);
+            Investment savedNotification = investmentRepository.save(investment);
 
-            Investment savedInvestment = investmentRepository.save(investment);
+            // Simular envio e atualizar status
+            sendNotification(savedNotification);
 
-            savedInvestment.setStatus(Investment.InvestmentStatus.SENT);
-            savedInvestment.setSentAt(LocalDateTime.now());
-            investmentRepository.save(savedInvestment);
-
-            log.info("Withdrawal notification processed for investment ID: {}", event.getInvestmentId());
+            log.info("Successfully processed investment withdrawn notification for investment ID: {}",
+                    event.getInvestmentId());
 
         } catch (Exception e) {
             log.error("Failed to process investment withdrawn notification for investment ID {}: {}",
@@ -96,36 +60,77 @@ public class NotificationService {
         }
     }
 
-    private String buildInvestmentCreatedMessage(InvestmentCreatedEvent event, Investment investment) {
+    private Investment createInvestmentCreatedNotification(InvestmentCreatedEvent event) {
+        Investment.InvestmentDetails details = Investment.InvestmentDetails.builder()
+                .investmentName(event.getModality() != null ? event.getModality() : "Unknown Investment")
+                .amount(event.getAmount())
+                .modality(event.getModality())
+                .termInMonths(event.getTermInMonths())
+                .build();
+
+        return Investment.builder()
+                .userId(event.getUserId())
+                .investmentId(event.getInvestmentId())
+                .type(Investment.InvestmentType.INVESTMENT_CREATED)
+                .title("Novo Investimento Criado")
+                .message(buildInvestmentCreatedMessage(event, details))
+                .status(Investment.InvestmentStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .investmentDetails(details)
+                .build();
+    }
+
+    private Investment createInvestmentWithdrawnNotification(InvestmentWithdrawnEvent event) {
+        Investment.InvestmentDetails details = Investment.InvestmentDetails.builder()
+                .investmentName("Investment Withdrawal")
+                .withdrawnAmount(event.getWithdrawnAmount())
+                .build();
+
+        return Investment.builder()
+                .userId(event.getUserId())
+                .investmentId(event.getInvestmentId())
+                .type(Investment.InvestmentType.INVESTMENT_WITHDRAWN)
+                .title("Resgate de Investimento")
+                .message(buildInvestmentWithdrawnMessage(event, details))
+                .status(Investment.InvestmentStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .investmentDetails(details)
+                .build();
+    }
+
+    private void sendNotification(Investment investment) {
+        try {
+            // Simular lógica de envio (email, push, SMS, etc.)
+            log.info("Sending notification to user {}: {}", investment.getUserId(), investment.getMessage());
+
+            // Atualizar status para enviado
+            investment.setStatus(Investment.InvestmentStatus.SENT);
+            investment.setSentAt(LocalDateTime.now());
+            investmentRepository.save(investment);
+
+        } catch (Exception e) {
+            log.error("Failed to send notification for investment ID {}: {}",
+                    investment.getInvestmentId(), e.getMessage());
+            investment.setStatus(Investment.InvestmentStatus.FAILED);
+            investmentRepository.save(investment);
+            throw e;
+        }
+    }
+
+    private String buildInvestmentCreatedMessage(InvestmentCreatedEvent event, Investment.InvestmentDetails details) {
         return String.format(
                 "Seu investimento '%s' foi criado com sucesso! " +
-                        "Valor: R$ %.2f",
-                investment.getName(),
-                investment.getAmount() != null ? investment.getAmount() : 0.0
+                        "Valor: R$ %.2f, Prazo: %d meses",
+                details.getInvestmentName(),
+                details.getAmount() != null ? details.getAmount() : 0.0,
+                details.getTermInMonths() != null ? details.getTermInMonths() : 0
         );
     }
 
-    private String buildInvestmentWithdrawnMessage(InvestmentWithdrawnEvent event, Investment investment) {
+    private String buildInvestmentWithdrawnMessage(InvestmentWithdrawnEvent event, Investment.InvestmentDetails details) {
         return String.format(
-                "Resgate do investimento '%s' realizado com sucesso! Valor resgatado: R$ %.2f",
-                investment.getName(),
+                "Resgate do investimento realizado com sucesso! Valor resgatado: R$ %.2f",
                 event.getWithdrawnAmount()
-        );
-    }
-
-    private String buildInvestmentMetadata(InvestmentCreatedEvent event) {
-        return String.format(
-                "{\"investmentId\": %d, \"modality\": \"%s\"}",
-                event.getInvestmentId(),
-                event.getModality() != null ? event.getModality() : "N/A"
-        );
-    }
-
-    private String buildWithdrawnMetadata(InvestmentWithdrawnEvent event) {
-        return String.format(
-                "{\"withdrawnAmount\": %.2f, \"investmentId\": %d}",
-                event.getWithdrawnAmount(),
-                event.getInvestmentId()
         );
     }
 }

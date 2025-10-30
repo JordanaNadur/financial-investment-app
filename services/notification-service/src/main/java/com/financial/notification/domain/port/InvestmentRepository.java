@@ -8,4 +8,7 @@ public interface InvestmentRepository {
     Optional<Investment> findById(Long id);
     List<Investment> findAll();
     Investment save(Investment investment);
+    List<Investment> findByUserId(Long userId);
+    List<Investment> findByStatus(Investment.InvestmentStatus status);
+    Optional<Investment> findByInvestmentId(Long investmentId);
 }
