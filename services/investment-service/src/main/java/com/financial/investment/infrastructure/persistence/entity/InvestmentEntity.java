@@ -24,7 +24,7 @@ public class InvestmentEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(name = "valor", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
     @Column(name = "monthly_return", nullable = false, precision = 5, scale = 4)
