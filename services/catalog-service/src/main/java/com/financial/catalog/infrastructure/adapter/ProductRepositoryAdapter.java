@@ -1,7 +1,7 @@
 package com.financial.catalog.infrastructure.adapter;
 
 import com.financial.catalog.domain.Product;
-import com.financial.catalog.port.ProductRepository;
+import com.financial.catalog.domain.port.ProductRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

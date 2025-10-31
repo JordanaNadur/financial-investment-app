@@ -23,7 +23,7 @@ public class ProductService {
             product.setType(request.getType());
             product.setDescription(request.getDescription());
             product.setRiskLevel(request.getRiskLevel());
-            product.setMinimumInvestment(request.getMinimumInvestiment());
+            product.setMinimumInvestment(request.getMinimumInvestment());
             product.setMonthlyReturn(request.getMonthlyReturn());
             product.setMinimumTermMonths(request.getMinimumTermMonths());
             product.setActive(request.getActive());
@@ -65,9 +65,9 @@ public class ProductService {
                 .type(product.getType())
                 .description(product.getDescription())
                 .riskLevel(product.getRiskLevel())
-                .minimunInvestment(product.getMinimumInvestment())
-                .minimunMonthlyReturn(product.getMonthlyReturn())
-                .minimunTermMonths(product.getMinimumTermMonths())
+                .minimumInvestment(product.getMinimumInvestment())
+                .monthlyReturn(product.getMonthlyReturn())
+                .minimumTermMonths(product.getMinimumTermMonths())
                 .active(product.getActive())
                 .build();
     }
