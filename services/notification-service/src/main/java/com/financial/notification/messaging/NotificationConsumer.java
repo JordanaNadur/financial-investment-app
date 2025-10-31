@@ -15,7 +15,6 @@ public class NotificationConsumer {
     private final NotificationService notificationService;
 
     @RabbitListener(queues = "${rabbitmq.queue.investment-created}")
-    @Transactional
     public void handleInvestmentCreated(InvestmentCreatedEvent event) {
         try {
             log.info("Received investment created event: userId={}, investmentId={}",

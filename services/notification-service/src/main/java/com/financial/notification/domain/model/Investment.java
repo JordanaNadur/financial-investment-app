@@ -3,6 +3,7 @@ package com.financial.notification.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,11 +19,12 @@ public class Investment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private Double amount;
-
-    // Novos campos para substituir a funcionalidade do Notification
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Column(name = "valor")
+    private BigDecimal amount;
+
     private Long investmentId;
 
     @Enumerated(EnumType.STRING)
@@ -34,9 +36,30 @@ public class Investment {
     @Enumerated(EnumType.STRING)
     private InvestmentStatus status;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "sent_at")
     private LocalDateTime sentAt;
-    private String metadata;
+
+    @Column(name = "data_investimento")
+    private LocalDateTime dataInvestimento; // NOVO CAMPO ADICIONADO
+
+    @Embedded
+    private InvestmentDetails investmentDetails;
+
+    @Embeddable
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class InvestmentDetails {
+        private String investmentName;
+        private String modality;
+        private Double withdrawnAmount;
+        private Integer termInMonths;
+    }
 
     public enum InvestmentType {
         INVESTMENT_CREATED,
@@ -47,5 +70,14 @@ public class Investment {
         PENDING,
         SENT,
         FAILED
+    }
+
+    public enum TipoModalidade {
+        RENDA_FIXA,
+        RENDA_VARIAVEL,
+        FUNDO_INVESTIMENTO,
+        TESOURO_DIRETO,
+        POUPANCA
+        // Adicione outros tipos de investimento conforme necessário
     }
 }
