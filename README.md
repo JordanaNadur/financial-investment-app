@@ -8,6 +8,8 @@ The application consists of the following components:
 
 - **Auth Service**: Handles user authentication and registration using JWT tokens.
 - **Investment Service**: Manages investment creation, calculation of returns, and withdrawals.
+- **Transaction Service**: Handles investment transactions, integrating with catalog, wallet, and portfolio services.
+- **Welcome Service**: Provides a simple welcome endpoint for the application.
 - **Notification Service**: Processes notifications asynchronously via RabbitMQ when investments are created.
 - **Frontend**: Angular application with PrimeNG and Angular Material for user interface.
 - **RabbitMQ**: Message broker for inter-service communication.
@@ -23,7 +25,7 @@ Services communicate via REST APIs and RabbitMQ for event-driven notifications.
 
 ## Prerequisites
 
-- Java 17 or higher
+- Java 21
 - Node.js 18 or higher
 - Docker and Docker Compose
 - Angular CLI (install globally: `npm install -g @angular/cli`)
@@ -62,7 +64,7 @@ Services communicate via REST APIs and RabbitMQ for event-driven notifications.
    ```
    docker-compose -f docker/docker-compose.yml up -d
    ```
-   This will start all services: auth-service (port 8081), investment-service (port 8082), notification-service (port 8083), and RabbitMQ (ports 5672, 15672).
+   This will start all services: auth-service (port 8081), investment-service (port 8082), transaction-service (port 8083), welcome-service (port 8084), notification-service (port 8085), and RabbitMQ (ports 5672, 15672).
 
 2. Start the frontend separately:
    ```
@@ -80,6 +82,7 @@ Services communicate via REST APIs and RabbitMQ for event-driven notifications.
 2. **Start Backend Services**:
    - Auth Service: `cd services/auth-service && mvn spring-boot:run`
    - Investment Service: `cd services/investment-service && mvn spring-boot:run`
+   - Transaction Service: `cd services/transaction-service && mvn spring-boot:run`
    - Notification Service: `cd services/notification-service && mvn spring-boot:run`
 
 3. **Start Frontend**:
@@ -100,6 +103,12 @@ Services communicate via REST APIs and RabbitMQ for event-driven notifications.
 - `GET /api/investments/{id}`: Get investment details
 - `PUT /api/investments/{id}/withdraw`: Withdraw from investment
 - `GET /api/investments/{id}/returns`: Calculate returns
+
+### Transaction Service (Port 8083)
+- `POST /api/transactions/invest`: Process an investment transaction (requires JWT)
+
+### Welcome Service (Port 8084)
+- `GET /api/welcome`: Get a welcome message
 
 ## Usage
 
