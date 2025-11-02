@@ -9,6 +9,7 @@ export interface AuthResponse {
   refreshToken?: string;
   username?: string;
   role?: string;
+  userId?: number;
 }
 
 export interface LoginRequest {
@@ -29,6 +30,7 @@ export class AuthService {
   private router = inject(Router);
   private baseUrl = `${environment.apiBaseUrl}/auth`;
   private tokenKey = 'token';
+  private userIdKey = 'userId';
 
   private decodeJwtPayload(token: string): any | null {
     try {
@@ -50,15 +52,18 @@ export class AuthService {
 
     let username = res.username || '';
     let role = res.role || '';
+    let userId = res.userId ?? null;
 
     const payload = this.decodeJwtPayload(res.token);
     if (payload) {
       username = payload.sub || username;
       role = payload.role || role;
+      userId = (payload.userId ?? userId) as number | null;
     }
 
     if (username) localStorage.setItem('username', username);
     if (role) localStorage.setItem('role', role);
+    if (userId != null) localStorage.setItem(this.userIdKey, String(userId));
   }
 
   login(payload: LoginRequest): Observable<AuthResponse> {
@@ -78,6 +83,7 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem('username');
     localStorage.removeItem('role');
+    localStorage.removeItem(this.userIdKey);
     this.router.navigate(['/login']);
   }
 
@@ -87,5 +93,10 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  getUserId(): number | null {
+    const v = localStorage.getItem(this.userIdKey);
+    return v ? Number(v) : null;
   }
 }

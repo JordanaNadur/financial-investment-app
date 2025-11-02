@@ -15,6 +15,8 @@ public class InvestmentResponse {
     private BigDecimal valor;
     private BigDecimal retornoSimulado;
     private String modalidade;
+    private String productName;
+    private String productType;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataResgate;
     private Boolean ativo;

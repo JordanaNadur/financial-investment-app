@@ -1,5 +1,19 @@
 /* You can add global styles to this file, and also import other style files */
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import 'primeicons/primeicons.css';
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Spinner global reusável */
+.spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(0,0,0,0.15);
+	border-top-color: #4f46e5;
+	border-radius: 50%;
+	display: inline-block;
+	animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

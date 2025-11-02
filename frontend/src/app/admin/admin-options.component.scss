@@ -1,0 +1,146 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  color: #fff;
+  padding: 16px 24px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.12);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.header-actions .btn {
+  margin-left: 8px;
+}
+
+.admin-container {
+  background: #f8fafc;
+  min-height: calc(100vh - 72px);
+  padding: 24px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 960px) {
+  .cards-grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(2,6,23,.08);
+  border: 1px solid #e5e7eb;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 0 16px;
+}
+
+.card-title {
+  padding: 16px;
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #eef2f7;
+}
+
+/* Form */
+.form { padding: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 680px) { .form-row { grid-template-columns: 1fr; } }
+
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #334155; }
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+  box-sizing: border-box;
+}
+.form-group input:focus, .form-group select:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,.12); }
+.form-group.checkbox label { font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+
+.error { color: #dc2626; font-size: .8rem; margin-top: 4px; }
+
+.form-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* Evitar que inputs "estourem" o card */
+.card .form, .card .toolbar { max-width: 100%; overflow: hidden; }
+.form-group { min-width: 0; }
+.form-row > .form-group { min-width: 0; }
+
+/* Ajuste de selects no iOS/Safari */
+.form-group select { -webkit-appearance: none; appearance: none; background-image: none; }
+
+/* Toolbar tabela */
+.toolbar { display: flex; gap: 12px; align-items: center; }
+.search { flex: 1; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; }
+.pager { display: flex; gap: 8px; align-items: center; }
+.pager label { display: inline-flex; align-items: center; gap: 6px; color: #475569; }
+.pager input { width: 64px; padding: 8px 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+
+.loading { padding: 16px; color: #475569; }
+.empty { padding: 16px; color: #64748b; }
+
+/* Tabela */
+.table { width: 100%; border-collapse: collapse; }
+.table thead th { text-align: left; font-size: .85rem; color: #64748b; font-weight: 700; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; }
+.table tbody td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #0f172a; }
+
+.text-ellipsis { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.row-actions { display: flex; gap: 8px; }
+
+/* Badges */
+.badge { padding: 4px 8px; border-radius: 999px; font-size: .75rem; font-weight: 700; }
+.badge-success { background: #ecfdf5; color: #047857; }
+.badge-muted { background: #f1f5f9; color: #475569; }
+
+/* Buttons */
+.btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-primary { background: linear-gradient(135deg, #6366f1, #0ea5e9); color: #fff; box-shadow: 0 6px 18px rgba(14,165,233,.2); }
+.btn-primary:disabled { opacity: .7; cursor: not-allowed; }
+.btn-secondary { background: #f1f5f9; color: #334155; }
+.btn-light { background: #fff; color: #334155; border: 1px solid #e5e7eb; }
+.btn-danger { background: #ef4444; color: #fff; }
+
+.btn:hover:not(:disabled) { filter: brightness(1.02); transform: translateY(-1px); transition: transform .15s ease; }
+
+/* Modal actions */
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+/* Estilos locais para modal de confirmação (evita depender de app.component.scss) */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.modal {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  min-width: 300px;
+  max-width: 90vw;
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+}

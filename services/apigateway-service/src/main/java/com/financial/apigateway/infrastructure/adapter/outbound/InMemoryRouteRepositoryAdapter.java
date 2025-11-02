@@ -18,17 +18,17 @@ public class InMemoryRouteRepositoryAdapter implements RouteRepositoryPort {
     }
 
     private void initializeRoutes() {
-        Route authLoginRoute = new Route("auth-login", "/api/auth/login", "http://localhost:8081", "POST", false);
-        Route authRegisterRoute = new Route("auth-register", "/api/auth/register", "http://localhost:8081", "POST", false);
-        Route authValidateRoute = new Route("auth-validate", "/api/auth/validate", "http://localhost:8081", "POST", false);
-        Route authAllRoute = new Route("auth-all", "/api/auth/*", "http://localhost:8081", "ALL", false);
+    Route authLoginRoute = new Route("auth-login", "/api/auth/login", "http://auth-service:8081", "POST", false);
+    Route authRegisterRoute = new Route("auth-register", "/api/auth/register", "http://auth-service:8081", "POST", false);
+    Route authValidateRoute = new Route("auth-validate", "/api/auth/validate", "http://auth-service:8081", "POST", false);
+    Route authAllRoute = new Route("auth-all", "/api/auth/*", "http://auth-service:8081", "ALL", false);
 
-        Route investmentListRoute = new Route("investment-list", "/api/investments", "http://localhost:8082", "GET", true);
-        Route investmentCreateRoute = new Route("investment-create", "/api/investments", "http://localhost:8082", "POST", true);
-        Route investmentByIdRoute = new Route("investment-by-id", "/api/investments/*", "http://localhost:8082", "GET", true);
+    Route investmentListRoute = new Route("investment-list", "/api/investments", "http://investment-service:8082", "GET", true);
+    Route investmentCreateRoute = new Route("investment-create", "/api/investments", "http://investment-service:8082", "POST", true);
+    Route investmentByIdRoute = new Route("investment-by-id", "/api/investments/*", "http://investment-service:8082", "GET", true);
 
-        Route notificationSendRoute = new Route("notification-send", "/api/notifications", "http://localhost:8083", "POST", true);
-        Route notificationListRoute = new Route("notification-list", "/api/notifications", "http://localhost:8083", "GET", true);
+    Route notificationSendRoute = new Route("notification-send", "/api/notifications", "http://notification-service:8083", "POST", true);
+    Route notificationListRoute = new Route("notification-list", "/api/notifications", "http://notification-service:8083", "GET", true);
 
         routes.put(authLoginRoute.getId(), authLoginRoute);
         routes.put(authRegisterRoute.getId(), authRegisterRoute);

@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -39,8 +40,9 @@ import { AuthService } from '../services/auth.service';
 export class RegisterComponent {
   form: FormGroup;
   loading = false;
+  private toast = inject(ToastService);
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router, private route: ActivatedRoute) {
     this.form = this.fb.group({
       username: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -60,16 +62,24 @@ export class RegisterComponent {
     const email = String(this.form.value.email || '').trim();
     const password = this.form.value.password;
     console.log('Chamando register', { username, email });
-    this.auth.register({ username, email, password, role: 'CLIENTE' }).subscribe({
+  const roleHint = (this.route.snapshot.data?.['role'] as string | undefined) || 'CLIENTE';
+  this.auth.register({ username, email, password, role: roleHint }).subscribe({
       next: (res) => {
         this.loading = false;
-        this.router.navigate(['/investments']);
+    const role = (localStorage.getItem('role') || roleHint).toUpperCase();
+    if (role === 'ADMIN') {
+      this.toast.success('Usuário ADMIN criado com sucesso.');
+      this.router.navigate(['/admin/dashboard']);
+    } else {
+      this.toast.success('Conta criada! Sua carteira foi creditada com R$ 10.000,00.');
+      this.router.navigate(['/cliente/dashboard']);
+    }
       },
       error: (err) => {
         console.error('Erro no registro', err);
         this.loading = false;
         const msg = err?.error?.message || err?.message || err?.statusText || 'Erro desconhecido';
-        alert('Falha no cadastro: ' + msg);
+        this.toast.error('Falha no cadastro: ' + msg);
       }
     });
   }

@@ -5,4 +5,5 @@ import java.math.BigDecimal;
 public interface WalletService {
     boolean hasSufficientBalance(Long clientId, BigDecimal amount);
     void debitBalance(Long clientId, BigDecimal amount);
+    void creditBalance(Long clientId, BigDecimal amount);
 }

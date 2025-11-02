@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/investment")
+@RequestMapping("/api/investment")
 @Tag(name = "Investment", description = "Endpoints para gerenciamento de investimentos")
 @RequiredArgsConstructor
 public class InvestmentController {

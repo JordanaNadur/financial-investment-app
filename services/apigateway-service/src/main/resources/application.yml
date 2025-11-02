@@ -18,12 +18,75 @@ spring:
             allowCredentials: true
       
       routes:
+        # Rota específica para expor actuator do auth corretamente
+        - id: auth-service-actuator
+          uri: http://auth-service:8081
+          order: -1
+          predicates:
+            - Path=/api/auth/actuator/**
+          filters:
+            - RewritePath=/api/auth/actuator(?<segment>/?.*), /actuator${segment}
+
         - id: auth-service
-          uri: http://localhost:8081
+          uri: http://auth-service:8081
           predicates:
             - Path=/api/auth/**
           filters:
             - StripPrefix=1
+
+        - id: investment-service
+          uri: http://investment-service:8082
+          predicates:
+            - Path=/api/investments,/api/investments/**
+          # Mantém o prefixo /api para combinar com o controller do serviço
+
+        - id: notification-service
+          uri: http://notification-service:8083
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=1
+
+        - id: catalog-service
+          uri: http://catalog-service:8084
+          predicates:
+            - Path=/api/products/**
+          # Mantém o prefixo /api para combinar com o controller do serviço
+
+        # Rota mais específica primeiro para reescrever /api/portfolio/investment -> /investment
+        - id: portfolio-investment-service
+          uri: http://portfolio-service:8085
+          predicates:
+            - Path=/api/portfolio/investment/**
+          filters:
+            - RewritePath=/api/portfolio/investment(?<segment>/?.*), /investment${segment}
+
+        - id: portfolio-service
+          uri: http://portfolio-service:8085
+          predicates:
+            - Path=/api/portfolio/**
+          filters:
+            - StripPrefix=1
+
+        - id: wallet-through-portfolio
+          uri: http://portfolio-service:8085
+          predicates:
+            - Path=/api/wallet/**
+          # Não remover prefixo: o serviço de destino expõe /api/wallet/** também
+
+        - id: transaction-service
+          uri: http://transaction-service:8083
+          predicates:
+            - Path=/api/transactions/**
+          filters:
+            - StripPrefix=1
+
+        - id: welcome-service
+          uri: http://welcome-service:8084
+          predicates:
+            - Path=/api/welcome/**
+          filters:
+            - RewritePath=/api/welcome(?<segment>/.+|), /auth${segment}
 
 jwt:
   secret: mySecretKey123456789012345678901234567890

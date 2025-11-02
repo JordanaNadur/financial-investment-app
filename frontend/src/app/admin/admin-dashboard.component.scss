@@ -1,0 +1,57 @@
+ .admin-dashboard { 
+  padding: 24px; 
+}
+
+.admin-dashboard h1 {
+  margin: 0 0 16px 0;
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.admin-card {
+  display: grid;
+  grid-template-columns: 48px 1fr 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 8px 30px rgba(2,6,23,.06);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.admin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 36px rgba(2,6,23,.10);
+  border-color: #c7d2fe;
+}
+
+.admin-card .icon {
+  font-size: 1.5rem;
+}
+
+.admin-card .content h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.admin-card .content p {
+  margin: 0;
+  color: #6b7280;
+  font-size: .9rem;
+}
+
+.admin-card .chevron {
+  font-size: 1.25rem;
+  color: #6366f1;
+}

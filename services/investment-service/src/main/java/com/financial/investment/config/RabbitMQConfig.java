@@ -1,5 +1,6 @@
 package com.financial.investment.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -11,8 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String INVESTMENT_EXCHANGE = "investment.exchange";
-    public static final String INVESTMENT_CREATED_QUEUE = "investment.created.queue";
-    public static final String INVESTMENT_WITHDRAWN_QUEUE = "investment.withdrawn.queue";
+    // As filas e bindings serão declaradas pelo notification-service (consumidor)
 
     public static final String ROUTING_KEY_CREATED = "investment.created";
     public static final String ROUTING_KEY_WITHDRAWN = "investment.withdrawn";
@@ -22,33 +22,12 @@ public class RabbitMQConfig {
         return new TopicExchange(INVESTMENT_EXCHANGE, true, false);
     }
 
-    @Bean
-    public Queue investmentCreatedQueue() {
-        return new Queue(INVESTMENT_CREATED_QUEUE, true);
-    }
+    // Nenhuma fila/binding é declarada aqui para evitar conflito de argumentos
 
     @Bean
-    public Queue investmentWithdrawnQueue() {
-        return new Queue(INVESTMENT_WITHDRAWN_QUEUE, true);
-    }
-
-    @Bean
-    public Binding bindingCreated() {
-        return BindingBuilder.bind(investmentCreatedQueue())
-                .to(investmentExchange())
-                .with(ROUTING_KEY_CREATED);
-    }
-
-    @Bean
-    public Binding bindingWithdrawn() {
-        return BindingBuilder.bind(investmentWithdrawnQueue())
-                .to(investmentExchange())
-                .with(ROUTING_KEY_WITHDRAWN);
-    }
-
-    @Bean
-    public Jackson2JsonMessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public Jackson2JsonMessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
+        // Usa o ObjectMapper do Spring Boot (já configurado com JavaTimeModule e ISO-8601)
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
 
     @Bean

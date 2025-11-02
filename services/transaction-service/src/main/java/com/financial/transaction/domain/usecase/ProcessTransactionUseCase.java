@@ -38,24 +38,30 @@ public class ProcessTransactionUseCase {
             throw new IllegalArgumentException("Opção inválida ou valor não permitido");
         }
 
-        // Verificar saldo do cliente
-        if (!walletService.hasSufficientBalance(clientId, amount)) {
-            throw new IllegalArgumentException("Saldo insuficiente");
+        Transaction savedTransaction;
+        if (type == Transaction.TransactionType.APORTE) {
+            // Verificar saldo do cliente e debitar
+            if (!walletService.hasSufficientBalance(clientId, amount)) {
+                throw new IllegalArgumentException("Saldo insuficiente");
+            }
+            walletService.debitBalance(clientId, amount);
+            portfolioService.addApplication(clientId, optionId, amount);
+
+            Transaction transaction = new Transaction(clientId, optionId, amount, type);
+            savedTransaction = transactionRepository.save(transaction);
+
+            InvestmentRealizedEvent event = new InvestmentRealizedEvent(clientId, savedTransaction.getId(), "Investimento realizado com sucesso");
+            eventProducer.sendInvestmentRealizedEvent(event);
+        } else if (type == Transaction.TransactionType.RESGATE) {
+            // Crédito em carteira e remoção da aplicação
+            walletService.creditBalance(clientId, amount);
+            portfolioService.removeApplication(clientId, optionId, amount);
+
+            Transaction transaction = new Transaction(clientId, optionId, amount, type);
+            savedTransaction = transactionRepository.save(transaction);
+        } else {
+            throw new IllegalArgumentException("Tipo de transação não suportado: " + type);
         }
-
-        // Debitar saldo
-        walletService.debitBalance(clientId, amount);
-
-        // Adicionar à carteira
-        portfolioService.addApplication(clientId, optionId, amount);
-
-        // Criar transação
-        Transaction transaction = new Transaction(clientId, optionId, amount, type);
-        Transaction savedTransaction = transactionRepository.save(transaction);
-
-        // Publicar evento
-        InvestmentRealizedEvent event = new InvestmentRealizedEvent(clientId, savedTransaction.getId(), "Investimento realizado com sucesso");
-        eventProducer.sendInvestmentRealizedEvent(event);
 
         return savedTransaction;
     }

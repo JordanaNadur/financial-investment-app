@@ -24,6 +24,15 @@ public class InvestmentEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Column(name = "option_id")
+    private Long optionId;
+
+    @Column(name = "product_name")
+    private String productName;
+
+    @Column(name = "product_type")
+    private String productType;
+
     @Column(name = "valor", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
