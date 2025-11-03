@@ -20,6 +20,8 @@ public class InvestmentMapper {
                 entity.getAmount(),
                 simulatedReturn,
                 entity.getModality(),
+                entity.getProductName(),
+                entity.getProductType(),
                 entity.getCreatedAt(),
                 entity.getWithdrawnAt(),
                 entity.getIsActive()
@@ -29,7 +31,7 @@ public class InvestmentMapper {
     private static BigDecimal calculateReturn(BigDecimal valor, BigDecimal rentabilidadeMensal, int prazoMeses) {
         BigDecimal taxaMensal = rentabilidadeMensal.add(BigDecimal.ONE);
         BigDecimal valorFuturo = valor.multiply(taxaMensal.pow(prazoMeses));
-        return valorFuturo.subtract(valor).setScale(2, BigDecimal.ROUND_HALF_UP);
+    return valorFuturo.subtract(valor).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     public static Page<InvestmentResponse> toResponsePage(Page<InvestmentEntity> entities) {

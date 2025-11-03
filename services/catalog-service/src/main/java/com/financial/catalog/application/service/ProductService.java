@@ -32,6 +32,23 @@ public class ProductService {
             return toResponse(saved);
     }
 
+    public ProductResponse updateProduct(Long id, ProductRequest request){
+        Product existing = getProductUseCase.getById(id)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        existing.setName(request.getName());
+        existing.setType(request.getType());
+        existing.setDescription(request.getDescription());
+        existing.setRiskLevel(request.getRiskLevel());
+        existing.setMinimumInvestment(request.getMinimumInvestment());
+        existing.setMonthlyReturn(request.getMonthlyReturn());
+        existing.setMinimumTermMonths(request.getMinimumTermMonths());
+        existing.setActive(request.getActive());
+
+        Product saved = productManagementUseCase.updateProduct(existing);
+        return toResponse(saved);
+    }
+
     public ProductResponse getProductById(Long id){
         Product product = getProductUseCase.getById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));

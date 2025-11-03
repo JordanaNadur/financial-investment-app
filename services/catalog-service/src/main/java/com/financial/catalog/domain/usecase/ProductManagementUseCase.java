@@ -31,4 +31,11 @@ public class ProductManagementUseCase {
         return false;
     }
 
+    public Product updateProduct(Product product) {
+        if (product.getId() == null || !productRepository.existsById(product.getId())) {
+            throw new IllegalArgumentException("Produto não encontrado para atualização");
+        }
+        return productRepository.save(product);
+    }
+
 }

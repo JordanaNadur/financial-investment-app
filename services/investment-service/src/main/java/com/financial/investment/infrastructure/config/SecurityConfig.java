@@ -1,33 +1,67 @@
 package com.financial.investment.infrastructure.config;
 
+import jakarta.annotation.Nullable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/investments/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
-            "/swagger-resources/**",
-    };
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http,
+                                                                                   JwtAuthenticationConverter jwtAuthConverter) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/investments/**").hasRole("CLIENTE")
+                                                .requestMatchers(HttpMethod.GET, "/api/investments/**").hasRole("CLIENTE")
+                                                .requestMatchers(HttpMethod.POST, "/api/investments/*/withdraw").hasRole("CLIENTE")
+                                                .anyRequest().authenticated()
+                                )
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter))
+                                );
+                return http.build();
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_ENDPOINTS).authenticated()
-                        .anyRequest().permitAll()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        @Bean
+        public JwtDecoder jwtDecoder(@Value("${jwt.secret:mySecretKey123456789012345678901234567890}") String secret) {
+                byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+                SecretKey key = new SecretKeySpec(keyBytes, "HmacSHA256");
+                return NimbusJwtDecoder.withSecretKey(key).build();
+        }
 
-        return http.build();
-    }
+        @Bean
+        public JwtAuthenticationConverter jwtAuthenticationConverter() {
+                JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+                converter.setJwtGrantedAuthoritiesConverter(this::extractAuthorities);
+                return converter;
+        }
+
+        private java.util.Collection<org.springframework.security.core.GrantedAuthority> extractAuthorities(Jwt jwt) {
+                String role = (String) jwt.getClaims().get("role");
+                java.util.List<org.springframework.security.core.GrantedAuthority> list = new java.util.ArrayList<>();
+                if (role != null && !role.isBlank()) {
+                        list.add(new SimpleGrantedAuthority("ROLE_" + role));
+                }
+                return list;
+        }
 }

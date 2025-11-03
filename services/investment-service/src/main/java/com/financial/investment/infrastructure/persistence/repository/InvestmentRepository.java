@@ -17,4 +17,9 @@ public interface InvestmentRepository extends JpaRepository<InvestmentEntity, Lo
     List<InvestmentEntity> findByUserId(Long userId);
 
     Optional<InvestmentEntity> findByIdAndUserId(Long id, Long userId);
+
+    // Somente investimentos ativos
+    Page<InvestmentEntity> findByUserIdAndIsActiveTrue(Long userId, Pageable pageable);
+
+    List<InvestmentEntity> findByUserIdAndIsActiveTrue(Long userId);
 }

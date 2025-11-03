@@ -12,13 +12,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/investments")
+@RequestMapping("/investments")
 @Tag(name = "Investments", description = "API para gerenciamento de investimentos")
 public class InvestmentController {
 
@@ -68,8 +73,32 @@ public class InvestmentController {
         return ResponseEntity.ok(amount);
     }
 
+    @GetMapping("/report/summary")
+    @PreAuthorize("hasRole('CLIENTE')")
+    @Operation(summary = "Resumo agregado por tipo de produto")
+    public ResponseEntity<Map<String, BigDecimal>> getSummary(Authentication auth) {
+    Long userId = getUserIdFromAuth(auth);
+    List<InvestmentResponse> list = investmentService.getInvestments(userId);
+    Map<String, BigDecimal> summary = list.stream()
+        .collect(Collectors.groupingBy(
+            inv -> inv.getProductType() != null ? inv.getProductType() : (inv.getModalidade() != null ? inv.getModalidade() : "N/A"),
+            Collectors.mapping(InvestmentResponse::getValor,
+                Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
+        ));
+    return ResponseEntity.ok(summary);
+    }
+
     private Long getUserIdFromAuth(Authentication auth) {
-        // Assumindo que o principal é o userId como String
-        return Long.valueOf(auth.getName());
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            Jwt jwt = jwtAuth.getToken();
+            Object claim = jwt.getClaims().get("userId");
+            if (claim instanceof Number num) {
+                return num.longValue();
+            }
+            if (claim instanceof String s) {
+                try { return Long.parseLong(s); } catch (NumberFormatException ignored) {}
+            }
+        }
+        throw new IllegalStateException("userId não encontrado no token JWT");
     }
 }

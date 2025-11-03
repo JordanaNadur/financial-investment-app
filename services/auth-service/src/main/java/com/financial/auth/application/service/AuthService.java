@@ -4,10 +4,10 @@ import com.financial.auth.application.dto.AuthRequest;
 import com.financial.auth.application.dto.AuthResponse;
 import com.financial.auth.application.dto.RegisterRequest;
 import com.financial.auth.domain.User;
+import com.financial.auth.infrastructure.client.PortfolioWalletClient;
 import com.financial.auth.domain.usecase.AuthenticateUserUseCase;
 import com.financial.auth.domain.usecase.RegisterUserUseCase;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,7 @@ public class AuthService {
 
     private final AuthenticateUserUseCase authenticateUserUseCase;
     private final RegisterUserUseCase registerUserUseCase;
+    private final PortfolioWalletClient walletClient;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -35,9 +36,10 @@ public class AuthService {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    public AuthService(AuthenticateUserUseCase authenticateUserUseCase, RegisterUserUseCase registerUserUseCase) {
+    public AuthService(AuthenticateUserUseCase authenticateUserUseCase, RegisterUserUseCase registerUserUseCase, PortfolioWalletClient walletClient) {
         this.authenticateUserUseCase = authenticateUserUseCase;
         this.registerUserUseCase = registerUserUseCase;
+        this.walletClient = walletClient;
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -53,6 +55,10 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         User user = registerUserUseCase.execute(request.getUsername(), request.getEmail(), request.getPassword(), request.getRole());
+        // Se for CLIENTE, credita 10.000 na carteira no portfolio-service
+        if (user.getRole() == User.Role.CLIENTE) {
+            walletClient.credit(user.getId(), java.math.BigDecimal.valueOf(10000));
+        }
         String token = generateToken(user);
         String refreshToken = generateRefreshToken(user);
         return new AuthResponse(token, refreshToken, user.getUsername(), user.getRole().name());
@@ -61,6 +67,7 @@ public class AuthService {
     private String generateToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getUsername())
+                .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
@@ -71,6 +78,7 @@ public class AuthService {
     private String generateRefreshToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getUsername())
+                .claim("userId", user.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpiration))
                 .signWith(getKey())

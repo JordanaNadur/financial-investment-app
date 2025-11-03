@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -35,8 +36,9 @@ import { AuthService } from '../services/auth.service';
 export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
+  private toast = inject(ToastService);
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router, private route: ActivatedRoute) {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
@@ -50,11 +52,16 @@ export class LoginComponent {
       this.auth.login({ username, password }).subscribe({
         next: () => {
           this.loading = false;
-          this.router.navigate(['/investments']);
+          const roleHint = (this.route.snapshot.data?.['role'] as string | undefined)?.toUpperCase();
+          const role = (localStorage.getItem('role') || '').toUpperCase();
+          const finalRole = roleHint || role;
+          if (finalRole === 'ADMIN') this.router.navigate(['/admin/dashboard']);
+          else this.router.navigate(['/cliente/dashboard']);
         },
         error: (err) => {
           this.loading = false;
-          alert('Falha no login: ' + (err?.error?.message || err.statusText || 'Erro desconhecido'));
+          const msg = err?.error?.message || err?.statusText || 'Erro desconhecido';
+          this.toast.error('Falha no login: ' + msg);
         }
       });
     }

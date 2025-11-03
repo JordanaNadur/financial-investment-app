@@ -1,33 +1,70 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { InvestmentService, InvestmentResponseDto } from '../services/investment.service';
+import { ToastService } from '../shared/toast.service';
 
 @Component({
   selector: 'app-investments',
   standalone: true,
   imports: [
-    CommonModule
+  CommonModule,
+  RouterModule
   ],
   template: `
     <div class="investments-container">
       <div class="investments-header">
-        <h2>Meus Investimentos</h2>
-        <button class="invest-btn" (click)="invest()">📈 Investir</button>
+        <h2 style="margin:0;">Meus Investimentos</h2>
+        <div class="nav-arrows" style="display:flex;gap:8px;">
+          <a routerLink="/cliente/opcoes" class="nav-btn" style="text-decoration:none;background:#f1f5f9;padding:6px 10px;border-radius:6px;color:#0f172a;display:inline-flex;align-items:center;gap:6px;"><span class="arrow">←</span> Investir</a>
+        </div>
       </div>
-      
-      <div class="investments-grid">
-        <div class="investment-card" *ngFor="let investment of investments">
-          <div class="card-header">
-            <h3>{{ investment.name }}</h3>
-            <span class="investment-type">{{ investment.type }}</span>
+
+      <div *ngIf="loading">Carregando...</div>
+      <div *ngIf="!loading && investments?.length===0" class="empty">Você ainda não possui investimentos.</div>
+
+      <div class="investments-grid" *ngIf="!loading && investments?.length">
+  <div class="investment-card" *ngFor="let investment of investments" [ngClass]="typeClass(investment.productType)">
+          <div class="card-header" [ngClass]="typeClass(investment.productType)">
+            <h3>{{ formatName(investment) }}</h3>
+            <span class="investment-type">{{ investment.modalidade }}</span>
           </div>
           <div class="card-content">
-            <p><strong>Valor:</strong> {{ investment.value | currency:'BRL':'symbol':'1.2-2' }}</p>
-            <p><strong>Rendimento:</strong> {{ investment.return }}%</p>
-            <p><strong>Data:</strong> {{ investment.date | date:'dd/MM/yyyy' }}</p>
-            <button class="withdraw-btn" (click)="withdraw(investment)">💰 Sacar</button>
+            <p *ngIf="investment.productType" style="color:#475569;margin:.25rem 0 .5rem;">
+              <strong>Produto:</strong>
+              <span><em>{{ investment.productType }}</em></span>
+            </p>
+            <p><strong>Valor:</strong> {{ investment.valor | currency:'BRL':'symbol':'1.2-2' }}</p>
+            <p><strong>Ganhos simulados:</strong> {{ investment.retornoSimulado | currency:'BRL':'symbol':'1.2-2' }}</p>
+            <p><strong>Data:</strong> {{ (investment.dataCriacao || '') | date:'dd/MM/yyyy' }}</p>
+            <button class="withdraw-btn" [ngClass]="typeClass(investment.productType)" (click)="openConfirm(investment)" [disabled]="withdrawingId===investment.id">
+              <span *ngIf="withdrawingId===investment.id" class="spinner" style="margin-right:8px"></span>
+              💰 Sacar
+            </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmação de saque -->
+    <div class="overlay" *ngIf="confirmVisible">
+      <div class="modal">
+        <h3 style="margin-top:0;">Confirmar saque</h3>
+        <p>
+          Deseja realmente sacar o investimento
+          <strong>#{{ selectedInvestment?.id }}</strong>?
+        </p>
+        <p style="color:#475569; font-size:.95rem;">
+          Valor investido:
+          <strong>{{ selectedInvestment?.valor | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-light" (click)="cancelConfirm()" [disabled]="withdrawingId===selectedInvestment?.id">Cancelar</button>
+          <button class="btn btn-danger" (click)="confirmWithdraw()" [disabled]="withdrawingId===selectedInvestment?.id">
+            <span *ngIf="withdrawingId===selectedInvestment?.id" class="spinner" style="margin-right:8px"></span>
+            Confirmar saque
+          </button>
         </div>
       </div>
     </div>
@@ -35,50 +72,66 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./investments.component.scss']
 })
 export class InvestmentsComponent {
-  investments: any[] = [];
-  username: string | null = null;
+  investments: InvestmentResponseDto[] = [];
+  loading = false;
+  withdrawingId: number | null = null;
+  confirmVisible = false;
+  selectedInvestment: InvestmentResponseDto | null = null;
 
-  constructor(private router: Router, private auth: AuthService) {
-    this.username = localStorage.getItem('username');
-    this.loadInvestments();
+  private router = inject(Router);
+  private auth = inject(AuthService);
+  private investmentApi = inject(InvestmentService);
+  private toast = inject(ToastService);
+
+  constructor() {
+    this.load();
   }
 
-  private loadInvestments() {
-    // Carrega investimentos do localStorage ou usa dados padrão
-    const savedInvestments = localStorage.getItem('investments');
-    if (savedInvestments) {
-      this.investments = JSON.parse(savedInvestments);
-      // Converte datas de string para Date
-      this.investments.forEach(inv => {
-        if (typeof inv.date === 'string') {
-          inv.date = new Date(inv.date);
-        }
-      });
-    } else {
-      // Investimentos padrão para demonstração
-      this.investments = [
-        { name: 'Tesouro Direto', type: 'Renda Fixa', value: 10000, return: 12.5, date: new Date('2024-01-15') },
-        { name: 'Ações PETR4', type: 'Renda Variável', value: 5000, return: 8.2, date: new Date('2024-02-20') },
-        { name: 'CDB Banco XYZ', type: 'Renda Fixa', value: 15000, return: 11.8, date: new Date('2024-03-10') }
-      ];
-      this.saveInvestments();
-    }
-  }
-
-  private saveInvestments() {
-    localStorage.setItem('investments', JSON.stringify(this.investments));
+  load() {
+    this.loading = true;
+    this.investmentApi.list().subscribe({
+      next: (items) => { this.investments = items || []; this.loading = false; },
+      error: () => { this.toast.error('Falha ao carregar investimentos'); this.loading = false; }
+    });
   }
 
   logout() { this.auth.logout(); }
 
-  withdraw(investment: any) {
-    const confirmWithdraw = confirm(`Deseja realmente sacar o investimento "${investment.name}"?\n\nValor: ${investment.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
-    if (confirmWithdraw) {
-      this.investments = this.investments.filter(inv => inv !== investment);
-      this.saveInvestments();
-      alert(`Saque realizado com sucesso!\n\nInvestimento: ${investment.name}\nValor sacado: ${investment.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n\nO valor será creditado em sua conta em até 2 dias úteis.`);
-    }
+  openConfirm(inv: InvestmentResponseDto) {
+    this.selectedInvestment = inv;
+    this.confirmVisible = true;
   }
 
-  invest() { this.router.navigate(['/investment-options']); }
+  cancelConfirm() {
+    this.confirmVisible = false;
+    this.selectedInvestment = null;
+  }
+
+  confirmWithdraw() {
+    if (!this.selectedInvestment) return;
+    const inv = this.selectedInvestment;
+    this.withdrawingId = inv.id;
+    this.investmentApi.withdraw(inv.id).subscribe({
+      next: () => {
+        this.toast.info('Saque solicitado.');
+        this.withdrawingId = null;
+        this.cancelConfirm();
+        this.load();
+      },
+      error: () => {
+        this.toast.error('Falha ao sacar investimento');
+        this.withdrawingId = null;
+      }
+    });
+  }
+
+  formatName(inv: InvestmentResponseDto): string {
+    return `Investimento #${inv.id}`;
+  }
+
+  typeClass(type?: string | null): string {
+    const t = (type || '').toUpperCase();
+    const allowed = ['ACAO','FII','ETF','FUNDO','TESOURO','RENDA_FIXA','CDB','LCI','LCA','DEBENTURE','OURO','CAMBIO','CRIPTO'];
+    return allowed.includes(t) ? `type-${t}` : 'type-DEFAULT';
+  }
 }

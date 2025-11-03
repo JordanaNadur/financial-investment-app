@@ -21,10 +21,16 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: 5672
     username: guest
     password: guest
+    template:
+      retry:
+        enabled: true
+        initial-interval: 2s
+        max-attempts: 3
+        multiplier: 2.0
 
 rabbitmq:
   exchange:

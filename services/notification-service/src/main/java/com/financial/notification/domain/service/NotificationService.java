@@ -61,6 +61,11 @@ public class NotificationService {
     }
 
     private Investment createInvestmentCreatedNotification(InvestmentCreatedEvent event) {
+    // Converter amount recebido (Double) para BigDecimal esperado na entidade
+    java.math.BigDecimal amount = event.getAmount() != null
+        ? java.math.BigDecimal.valueOf(event.getAmount())
+        : java.math.BigDecimal.ZERO;
+
         // Criar InvestmentDetails apenas com os campos que existem
         Investment.InvestmentDetails details = Investment.InvestmentDetails.builder()
                 .investmentName(event.getModality() != null ? event.getModality() : "Unknown Investment")
@@ -77,8 +82,10 @@ public class NotificationService {
                 event.getTermInMonths() != null ? event.getTermInMonths() : 0
         );
 
-        return Investment.builder()
+    return Investment.builder()
                 .userId(event.getUserId())
+                .amount(amount)
+        .monthlyReturn(event.getMonthlyReturn() != null ? event.getMonthlyReturn() : java.math.BigDecimal.ZERO)
                 .investmentId(event.getInvestmentId())
                 .type(Investment.InvestmentType.INVESTMENT_CREATED)
                 .title("Novo Investimento Criado")

@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "investments")
+@Table(name = "investment_notifications")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,6 +24,9 @@ public class Investment {
 
     @Column(name = "valor")
     private BigDecimal amount;
+
+    @Column(name = "monthly_return")
+    private BigDecimal monthlyReturn;
 
     private Long investmentId;
 

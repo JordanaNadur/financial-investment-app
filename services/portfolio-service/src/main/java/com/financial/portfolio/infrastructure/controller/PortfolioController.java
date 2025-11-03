@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/portfolio")
+@RequestMapping("/api/portfolio")
 @Tag(name = "Portfolio", description = "Endpoints para gerenciamento de portfolios")
 @RequiredArgsConstructor
 public class PortfolioController {

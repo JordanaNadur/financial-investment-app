@@ -92,11 +92,7 @@
   box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
 
-.card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 1.5rem;
-}
+.card-header { color: white; padding: 1.5rem; }
 
 .card-header h3 {
   margin: 0 0 0.5rem 0;
@@ -127,28 +123,60 @@
   font-weight: 600;
 }
 
-.withdraw-btn {
-  width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-}
+.withdraw-btn { width: 100%; color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1rem; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 
-.withdraw-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-}
+.withdraw-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
 
 .withdraw-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
+
+/* Temas por tipo */
+.type-DEFAULT .card-header { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
+.type-DEFAULT.withdraw-btn { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
+
+.type-ACAO .card-header, .withdraw-btn.type-ACAO { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+.type-FII .card-header, .withdraw-btn.type-FII { background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); }
+.type-ETF .card-header, .withdraw-btn.type-ETF { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); }
+.type-FUNDO .card-header, .withdraw-btn.type-FUNDO { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+.type-TESOURO .card-header, .withdraw-btn.type-TESOURO { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+.type-RENDA_FIXA .card-header, .withdraw-btn.type-RENDA_FIXA { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+.type-CDB .card-header, .withdraw-btn.type-CDB { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.type-LCI .card-header, .withdraw-btn.type-LCI { background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%); }
+.type-LCA .card-header, .withdraw-btn.type-LCA { background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%); }
+.type-DEBENTURE .card-header, .withdraw-btn.type-DEBENTURE { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+.type-OURO .card-header, .withdraw-btn.type-OURO { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); }
+.type-CAMBIO .card-header, .withdraw-btn.type-CAMBIO { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+.type-CRIPTO .card-header, .withdraw-btn.type-CRIPTO { background: linear-gradient(135deg, #334155 0%, #0f172a 100%); }
+
+/* Estilos locais para modal de confirmação de saque */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.modal {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  min-width: 320px;
+  max-width: 92vw;
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-light { background: #fff; color: #334155; border: 1px solid #e5e7eb; }
+.btn-danger { background: #ef4444; color: #fff; }

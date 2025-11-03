@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/transactions")
+@RequestMapping("/api/transactions")
 public class TransactionController {
 
     private final TransactionService transactionService;
@@ -18,6 +18,14 @@ public class TransactionController {
 
     @PostMapping("/invest")
     public ResponseEntity<TransactionResponse> invest(@RequestBody TransactionRequest request) {
+    request.setType("APORTE");
+        TransactionResponse response = transactionService.processTransaction(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<TransactionResponse> withdraw(@RequestBody TransactionRequest request) {
+        request.setType("RESGATE");
         TransactionResponse response = transactionService.processTransaction(request);
         return ResponseEntity.ok(response);
     }
